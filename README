@@ -1,3 +1,13 @@
+FTCoreText
+
+1：修改成ARC支持
+
+2：修复图片放在文字下方无法显示的问题
+解决文案：-processText中，替换图片的lines从\n修改成\n-\n
+
+
+以下原始说明：
+
 Welcome to FTCoreText Objective-C library for iOS development.
 
 Implementation Instructions:

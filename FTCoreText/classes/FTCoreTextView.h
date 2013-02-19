@@ -59,6 +59,7 @@ extern NSString * const FTCoreTextDataAttributes;
 //shadow is not yet part of a style. It's applied on the whole view	
 @property (nonatomic, retain) UIColor *shadowColor;
 @property (nonatomic, assign) CGSize shadowOffset;
+@property (nonatomic,retain) NSMutableDictionary * imageResources; //key=图片文件名称（NSString） value=图片内容（UIImage）
 
 /* Using this method, you then have to set the -text property to get any result */
 - (id)initWithFrame:(CGRect)frame;
@@ -70,14 +71,14 @@ extern NSString * const FTCoreTextDataAttributes;
  * make the view regonize <li>...</li> tags as bullet points */
 - (void)changeDefaultTag:(NSString *)coreTextTag toTag:(NSString *)newDefaultTag;
 
-- (void)setStyles:(NSDictionary *)styles __deprecated;
 
 - (void)addStyle:(FTCoreTextStyle *)style;
 - (void)addStyles:(NSArray *)styles;
 
+- (void)addImageResourcesObject:(UIImage *)object withName:(NSString*) imageName;
+
 - (void)removeAllStyles;
 
-- (NSArray *)stylesArray __deprecated;
 - (NSArray *)styles;
 
 + (NSString *)stripTagsForString:(NSString *)string;
@@ -90,7 +91,6 @@ extern NSString * const FTCoreTextDataAttributes;
 
 @protocol FTCoreTextViewDelegate <NSObject>
 @optional
-- (void)touchedData:(NSDictionary *)data inCoreTextView:(FTCoreTextView *)textView __deprecated;
 - (void)coreTextView:(FTCoreTextView *)coreTextView receivedTouchOnData:(NSDictionary *)data;
 @end
 

@@ -255,6 +255,7 @@ NSInteger rangeSort(NSString *range1, NSString *range2, void *context);
 @synthesize shadowColor = _shadowColor;
 @synthesize shadowOffset = _shadowOffset;
 @synthesize attributedString = _attributedString;
+@synthesize imageResources = _imageResources;
 
 #pragma mark - Tools methods
 
@@ -883,6 +884,9 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
 	_styles = [[NSMutableDictionary alloc] init];
 	_URLs = [[NSMutableDictionary alloc] init];
     _images = [[NSMutableArray alloc] init];
+    
+    _imageResources = [[NSMutableDictionary alloc]init];
+    
 	self.opaque = NO;
 	self.backgroundColor = [UIColor clearColor];
 	self.contentMode = UIViewContentModeRedraw;
@@ -920,14 +924,6 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
     if ([self superview]) [self setNeedsDisplay];
 }
 
-//only here to assure compatibility with previous versions
-- (void)setStyles:(NSDictionary *)styles
-{
-    _styles = [styles mutableCopy];
-	[self didMakeChanges];
-    if ([self superview]) [self setNeedsDisplay];
-}
-
 - (void)setPath:(CGPathRef)path
 {
     _path = CGPathRetain(path);
@@ -947,13 +943,14 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
 	if ([self superview]) [self setNeedsDisplay];
 }
 
-#pragma mark - Custom Getters
-
-//only here to assure compatibility with previous versions
-- (NSArray *)stylesArray
+- (void)addImageResourcesObject:(UIImage *)object withName:(NSString *)imageName
 {
-	return [self styles];
+    if(_imageResources){
+        [_imageResources setObject:object forKey:imageName];
+    }
 }
+
+#pragma mark - Custom Getters
 
 - (NSArray *)styles
 {
@@ -1115,12 +1112,8 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
 				if ([self.delegate respondsToSelector:@selector(coreTextView:receivedTouchOnData:)]) {
 					[self.delegate coreTextView:self receivedTouchOnData:data];
 				}
-				else {
-					if ([self.delegate respondsToSelector:@selector(touchedData:inCoreTextView:)]) {
-						[self.delegate touchedData:data inCoreTextView:self];
-					}
+				
             }
-        }
     }
 }
 

@@ -135,7 +135,7 @@
     // set text
     //[coreTextView setText:[self textForView:@"text"]];
     //[coreTextView setText:[self textForView:@"text2"]];
-    [coreTextView setText:@"helloworld<_image>giraffe.png</_image>"];
+    [coreTextView setText:@"helloworld\n<_image>giraffe.png</_image>"];
     
     
     // set styles
