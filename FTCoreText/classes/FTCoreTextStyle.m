@@ -51,7 +51,7 @@
 + (id)styleWithName:(NSString *)name {
     FTCoreTextStyle *style = [[FTCoreTextStyle alloc] init];
     [style setName:name];
-    return [style autorelease];
+    return style;
 }
 
 - (void)setSpaceBetweenParagraphs:(CGFloat)spaceBetweenParagraphs
@@ -85,9 +85,9 @@
 - (id)copyWithZone:(NSZone *)zone
 {
 	FTCoreTextStyle *style = [[FTCoreTextStyle alloc] init];
-	style.name = [[self.name copy] autorelease];
+	style.name = [self.name copy];
 	style.bulletCharacter = self.bulletCharacter;
-	style.appendedCharacter = [[self.appendedCharacter copy] autorelease];
+	style.appendedCharacter = [self.appendedCharacter copy];
 	style.font = [UIFont fontWithName:self.font.fontName size:self.font.pointSize];
 	style.color = self.color;
 	style.underlined = self.isUnderLined;
@@ -103,18 +103,6 @@
 - (void)setParagraphInset:(UIEdgeInsets)paragraphInset
 {
 	_paragraphInset = paragraphInset;
-}
-
-- (void)dealloc
-{    
-    [_name release];
-	[_bulletCharacter release];
-    [_appendedCharacter release];
-    [_font release];
-    [_color release];
-	[_bulletColor release];
-	[_bulletFont release];
-    [super dealloc];
 }
 
 #pragma GCC diagnostic warning "-Wdeprecated-declarations"

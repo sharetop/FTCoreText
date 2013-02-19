@@ -14,9 +14,9 @@
 @synthesize coreTextView;
 
 
-- (NSString *)textForView
+- (NSString *)textForView:(NSString*) fname
 {
-    return [NSString stringWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"text" ofType:@"txt"] encoding:NSUTF8StringEncoding error:nil];
+    return [NSString stringWithContentsOfFile:[[NSBundle mainBundle] pathForResource:fname ofType:@"txt"] encoding:NSUTF8StringEncoding error:nil];
 }
 
 
@@ -40,22 +40,23 @@
 	FTCoreTextStyle *imageStyle = [FTCoreTextStyle new];
 	imageStyle.paragraphInset = UIEdgeInsetsMake(0,0,0,0);
 	imageStyle.name = FTCoreTextTagImage;
+
+    //这里的值会影响到图片上下行距(by sharetop)
+    imageStyle.font = [UIFont systemFontOfSize:4.f];
+    
 	imageStyle.textAlignment = FTCoreTextAlignementCenter;
 	[result addObject:imageStyle];
-	[imageStyle release];	
-	
+    
 	FTCoreTextStyle *firstLetterStyle = [FTCoreTextStyle new];
 	firstLetterStyle.name = @"firstLetter";
 	firstLetterStyle.font = [UIFont fontWithName:@"TimesNewRomanPS-BoldMT" size:30.f];
 	[result addObject:firstLetterStyle];
-	[firstLetterStyle release];
-	
+    
 	FTCoreTextStyle *linkStyle = [defaultStyle copy];
 	linkStyle.name = FTCoreTextTagLink;
 	linkStyle.color = [UIColor orangeColor];
 	[result addObject:linkStyle];
-	[linkStyle release];
-	
+    
 	FTCoreTextStyle *subtitleStyle = [FTCoreTextStyle styleWithName:@"subtitle"];
 	subtitleStyle.font = [UIFont fontWithName:@"TimesNewRomanPS-BoldMT" size:25.f];
 	subtitleStyle.color = [UIColor brownColor];
@@ -68,26 +69,22 @@
 	bulletStyle.bulletColor = [UIColor orangeColor];
 	bulletStyle.bulletCharacter = @"❧";
 	[result addObject:bulletStyle];
-	[bulletStyle release];
     
     FTCoreTextStyle *italicStyle = [defaultStyle copy];
 	italicStyle.name = @"italic";
 	italicStyle.underlined = YES;
     italicStyle.font = [UIFont fontWithName:@"TimesNewRomanPS-ItalicMT" size:16.f];
 	[result addObject:italicStyle];
-	[italicStyle release];
-    
+	
     FTCoreTextStyle *boldStyle = [defaultStyle copy];
 	boldStyle.name = @"bold";
     boldStyle.font = [UIFont fontWithName:@"TimesNewRomanPS-BoldMT" size:16.f];
 	[result addObject:boldStyle];
-	[boldStyle release];
-    
+	
     FTCoreTextStyle *coloredStyle = [defaultStyle copy];
     [coloredStyle setName:@"colored"];
     [coloredStyle setColor:[UIColor redColor]];
 	[result addObject:coloredStyle];
-    [defaultStyle release];
     
     return  result;
 }
@@ -134,14 +131,21 @@
 	scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     coreTextView = [[FTCoreTextView alloc] initWithFrame:CGRectMake(20, 20, 280, 0)];
 	coreTextView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    
     // set text
-    [coreTextView setText:[self textForView]];
+    //[coreTextView setText:[self textForView:@"text"]];
+    //[coreTextView setText:[self textForView:@"text2"]];
+    [coreTextView setText:@"helloworld<_image>giraffe.png</_image>"];
+    
+    
     // set styles
     [coreTextView addStyles:[self coreTextStyle]];
     // set delegate
     [coreTextView setDelegate:self];
 	
+    //背景色淡灰，方便查看尺寸
 	[coreTextView fitToSuggestedHeight];
+    [coreTextView setBackgroundColor:[UIColor lightGrayColor]];
 
     [scrollView addSubview:coreTextView];
     [scrollView setContentSize:CGSizeMake(CGRectGetWidth(scrollView.bounds), CGRectGetHeight(coreTextView.frame) + 40)];
@@ -159,11 +163,5 @@
 	[scrollView setContentSize:CGSizeMake(CGRectGetWidth(scrollView.bounds), CGRectGetHeight(coreTextView.frame) + 40)];
 }
 
-- (void)dealloc
-{
-	[coreTextView release];
-	[scrollView release];
-	[super dealloc];
-}
 
 @end

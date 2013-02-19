@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		26E8D8C516D3BC25008B57BB /* text2.txt in Resources */ = {isa = PBXBuildFile; fileRef = 26E8D8C416D3BC25008B57BB /* text2.txt */; };
 		682D46DF144C862500D3411E /* FTCoreTextStyle.m in Sources */ = {isa = PBXBuildFile; fileRef = 682D46DC144C862500D3411E /* FTCoreTextStyle.m */; };
 		684DBCAA13FD4DCF00776C6D /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 684DBCA913FD4DCF00776C6D /* UIKit.framework */; };
 		684DBCAC13FD4DCF00776C6D /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 684DBCAB13FD4DCF00776C6D /* Foundation.framework */; };
@@ -24,6 +25,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		26E8D8C416D3BC25008B57BB /* text2.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = text2.txt; sourceTree = "<group>"; };
 		682D46DB144C862500D3411E /* FTCoreTextStyle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTCoreTextStyle.h; path = classes/FTCoreTextStyle.h; sourceTree = "<group>"; };
 		682D46DC144C862500D3411E /* FTCoreTextStyle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FTCoreTextStyle.m; path = classes/FTCoreTextStyle.m; sourceTree = "<group>"; };
 		684DBCA513FD4DCF00776C6D /* FTCoreText.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FTCoreText.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -123,6 +125,7 @@
 			isa = PBXGroup;
 			children = (
 				9346F4321459AF2200EFA449 /* text.txt */,
+				26E8D8C416D3BC25008B57BB /* text2.txt */,
 				9346F42E1459AEF500EFA449 /* giraffe.png */,
 				9346F42F1459AEF500EFA449 /* giraffe@2x.png */,
 			);
@@ -184,6 +187,7 @@
 				9346F4301459AEF500EFA449 /* giraffe.png in Resources */,
 				9346F4311459AEF500EFA449 /* giraffe@2x.png in Resources */,
 				9346F4331459AF2200EFA449 /* text.txt in Resources */,
+				26E8D8C516D3BC25008B57BB /* text2.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -232,6 +236,8 @@
 					"$(ARCHS_STANDARD_32_BIT)",
 					armv6,
 				);
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_OBJCPP_ARC_ABI = NO;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -246,7 +252,7 @@
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 3.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
 				SDKROOT = iphoneos;
 			};
 			name = Debug;
@@ -259,6 +265,8 @@
 					"$(ARCHS_STANDARD_32_BIT)",
 					armv6,
 				);
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_OBJCPP_ARC_ABI = NO;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -266,7 +274,7 @@
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 3.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
@@ -280,7 +288,7 @@
 				GCC_PREFIX_HEADER = "FTCoreText/FTCoreText-Prefix.pch";
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				INFOPLIST_FILE = "FTCoreText/FTCoreText-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 3.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = 1;
 				WRAPPER_EXTENSION = app;
@@ -294,7 +302,7 @@
 				GCC_PREFIX_HEADER = "FTCoreText/FTCoreText-Prefix.pch";
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				INFOPLIST_FILE = "FTCoreText/FTCoreText-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 3.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = 1;
 				WRAPPER_EXTENSION = app;
