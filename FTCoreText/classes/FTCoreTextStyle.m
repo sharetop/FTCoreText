@@ -24,7 +24,6 @@
 @synthesize leading = _leading;
 @synthesize maxLineHeight = _maxLineHeight;
 @synthesize minLineHeight = _minLineHeight;
-@synthesize spaceBetweenParagraphs = _spaceBetweenParagraphs;
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 

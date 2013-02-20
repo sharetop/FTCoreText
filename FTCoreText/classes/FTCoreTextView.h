@@ -49,17 +49,17 @@ extern NSString * const FTCoreTextDataAttributes;
 	} _coreTextViewFlags;
 }
 
-@property (nonatomic, retain) NSString				*text;
-@property (nonatomic, retain) NSString				*processedString;
+@property (nonatomic, strong) NSString				*text;
+@property (nonatomic, strong) NSString				*processedString;
 @property (nonatomic, readonly) NSAttributedString	*attributedString;
 @property (nonatomic, assign) CGPathRef				path;
-@property (nonatomic, retain) NSMutableDictionary	*URLs;
-@property (nonatomic, retain) NSMutableArray		*images;
+@property (nonatomic, strong) NSMutableDictionary	*URLs;
+@property (nonatomic, strong) NSMutableArray		*images;
 @property (nonatomic, assign) id <FTCoreTextViewDelegate> delegate;
 //shadow is not yet part of a style. It's applied on the whole view	
-@property (nonatomic, retain) UIColor *shadowColor;
+@property (nonatomic, strong) UIColor *shadowColor;
 @property (nonatomic, assign) CGSize shadowOffset;
-@property (nonatomic,retain) NSMutableDictionary * imageResources; //key=图片文件名称（NSString） value=图片内容（UIImage）
+@property (nonatomic,strong) NSMutableDictionary * imageResources; //key=图片文件名称（NSString） value=图片内容（UIImage）
 
 /* Using this method, you then have to set the -text property to get any result */
 - (id)initWithFrame:(CGRect)frame;
@@ -82,7 +82,6 @@ extern NSString * const FTCoreTextDataAttributes;
 - (NSArray *)styles;
 
 + (NSString *)stripTagsForString:(NSString *)string;
-+ (NSArray *)pagesFromText:(NSString *)string;
 
 - (CGSize)suggestedSizeConstrainedToSize:(CGSize)size;
 - (void)fitToSuggestedHeight;

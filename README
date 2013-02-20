@@ -1,14 +1,46 @@
 FTCoreText
+==============
 
-1：修改成ARC支持
+V0.2
+----
 
-2：修复图片放在文字下方无法显示的问题
-解决文案：-processText中，替换图片的lines从\n修改成\n-\n
+1.强制让<_image>标签的图片元素单独占一行，不管前后是否手工加上换行符
+
+*修改方案：
+FTCoreTextView.m中的`- (void)applyStyle:(FTCoreTextStyle *)style inRange:(NSRange)styleRange onString:(NSMutableAttributedString **)attributedString`函数中，根据元素类型分别设置行高或者段前距。
+
+    CGFloat paragraphLeading =([style.name isEqualToString:FTCoreTextTagImage])?0.f:style.leading;
+    CGFloat paragraphSpacingBefore =([style.name isEqualToString:FTCoreTextTagImage])?style.leading:style.paragraphInset.top;
+
+2.增加属性`@property (nonatomic,strong) NSMutableDictionary * imageResources;`保存图像资源，可以预处理一下UIImage给它，这样就是每次从bundle中加载了。
 
 
-以下原始说明：
+
+V0.1
+-----
+
+1.修改成ARC支持
+
+2.小修图片放在文字下方（最后）无法显示的问题
+
+*修改方案：
+FTCoreTextView.m中的`- (void)processText`函数中，替换图片的lines从@"\n"修改成@"\n-\n"
+*原因分析：
+换行符跟着前面的文字，则为图片设置的行高不起作用了，导致CoreText计算绘制区域时忽略了图片的高度。
+增加一个占位符（-或者空格均可），则让为图片设置的行高起作用（_行高即图片高度_）。
+*遗留问题：
+如果是helloworld\n<_image>giraffe</_image>正常，但是如果helloworld<_image>giraffe</_image>仍不正常。
+*期待要求：
+对于<_image>标签，应该是自动能够单占一行，而无须手动增加那个换行，所以还要进一步处理。
+
+
+
+
+以下原作者的说明：
+
 
 Welcome to FTCoreText Objective-C library for iOS development.
+===============================================================
 
 Implementation Instructions:
 

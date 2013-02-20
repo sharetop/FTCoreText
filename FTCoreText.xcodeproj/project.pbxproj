@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		263158FA16D4C80D00EDD696 /* README in Resources */ = {isa = PBXBuildFile; fileRef = 263158F916D4C80D00EDD696 /* README */; };
 		26E8D8C516D3BC25008B57BB /* text2.txt in Resources */ = {isa = PBXBuildFile; fileRef = 26E8D8C416D3BC25008B57BB /* text2.txt */; };
 		682D46DF144C862500D3411E /* FTCoreTextStyle.m in Sources */ = {isa = PBXBuildFile; fileRef = 682D46DC144C862500D3411E /* FTCoreTextStyle.m */; };
 		684DBCAA13FD4DCF00776C6D /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 684DBCA913FD4DCF00776C6D /* UIKit.framework */; };
@@ -25,6 +26,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		263158F916D4C80D00EDD696 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
 		26E8D8C416D3BC25008B57BB /* text2.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = text2.txt; sourceTree = "<group>"; };
 		682D46DB144C862500D3411E /* FTCoreTextStyle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTCoreTextStyle.h; path = classes/FTCoreTextStyle.h; sourceTree = "<group>"; };
 		682D46DC144C862500D3411E /* FTCoreTextStyle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FTCoreTextStyle.m; path = classes/FTCoreTextStyle.m; sourceTree = "<group>"; };
@@ -64,9 +66,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		263158F816D4C73500EDD696 /* classes */ = {
+			isa = PBXGroup;
+			children = (
+				68A16CB41510D9BB007B079A /* FTCoreTextView.h */,
+				68A16CB51510D9BB007B079A /* FTCoreTextView.m */,
+				682D46DB144C862500D3411E /* FTCoreTextStyle.h */,
+				682D46DC144C862500D3411E /* FTCoreTextStyle.m */,
+			);
+			name = classes;
+			sourceTree = "<group>";
+		};
 		684DBC9A13FD4DCF00776C6D = {
 			isa = PBXGroup;
 			children = (
+				263158F916D4C80D00EDD696 /* README */,
 				684DBCAF13FD4DCF00776C6D /* FTCoreText */,
 				684DBCA813FD4DCF00776C6D /* Frameworks */,
 				684DBCA613FD4DCF00776C6D /* Products */,
@@ -95,15 +109,12 @@
 		684DBCAF13FD4DCF00776C6D /* FTCoreText */ = {
 			isa = PBXGroup;
 			children = (
-				68A16CB41510D9BB007B079A /* FTCoreTextView.h */,
-				68A16CB51510D9BB007B079A /* FTCoreTextView.m */,
-				682D46DB144C862500D3411E /* FTCoreTextStyle.h */,
-				682D46DC144C862500D3411E /* FTCoreTextStyle.m */,
-				684DBCB013FD4DCF00776C6D /* Supporting Files */,
+				263158F816D4C73500EDD696 /* classes */,
 				684DBCC313FD4E5E00776C6D /* articleViewController.h */,
 				684DBCC413FD4E5E00776C6D /* articleViewController.m */,
 				684DBCB813FD4DCF00776C6D /* FTCoreTextAppDelegate.h */,
 				684DBCB913FD4DCF00776C6D /* FTCoreTextAppDelegate.m */,
+				684DBCB013FD4DCF00776C6D /* Supporting Files */,
 			);
 			path = FTCoreText;
 			sourceTree = "<group>";
@@ -188,6 +199,7 @@
 				9346F4311459AEF500EFA449 /* giraffe@2x.png in Resources */,
 				9346F4331459AF2200EFA449 /* text.txt in Resources */,
 				26E8D8C516D3BC25008B57BB /* text2.txt in Resources */,
+				263158FA16D4C80D00EDD696 /* README in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

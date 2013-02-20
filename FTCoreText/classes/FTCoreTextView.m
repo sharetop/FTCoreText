@@ -31,7 +31,7 @@ typedef enum {
 @interface FTCoreTextNode : NSObject
 
 @property (nonatomic, assign) FTCoreTextNode	*supernode;
-@property (nonatomic, retain) NSArray			*subnodes;
+@property (nonatomic, strong) NSArray			*subnodes;
 @property (nonatomic, copy)	  FTCoreTextStyle	*style;
 @property (nonatomic, assign) NSRange			styleRange;
 @property (nonatomic, assign) BOOL				isClosed;
@@ -39,7 +39,8 @@ typedef enum {
 @property (nonatomic, assign) BOOL				isLink;
 @property (nonatomic, assign) BOOL				isImage;
 @property (nonatomic, assign) BOOL				isBullet;
-@property (nonatomic, retain) NSString			*imageName;
+@property (nonatomic, strong) NSString			*imageName;
+@property (nonatomic, assign) BOOL              isPage;
 
 - (NSString *)descriptionOfTree;
 - (NSString *)descriptionToRoot;
@@ -66,6 +67,7 @@ typedef enum {
 @synthesize startLocation = _startLocation;
 @synthesize isBullet = _isBullet;
 @synthesize imageName = _imageName;
+@synthesize isPage = _isPage;
 
 - (NSArray *)subnodes
 {
@@ -238,7 +240,6 @@ NSInteger rangeSort(NSString *range1, NSString *range2, void *context);
 - (void)doInit;
 - (void)didMakeChanges;
 - (NSString *)defaultTagNameForKey:(NSString *)tagKey;
-- (NSMutableArray *)divideTextInPages:(NSString *)string;
 
 @end
 
@@ -388,7 +389,7 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
                     
                     CGFloat xOffset = CTLineGetOffsetForStringIndex(line, CTRunGetStringRange(run).location, NULL); //9
                     runBounds.origin.x = baselineOrigin.x + self.frame.origin.x + xOffset + 0;
-                    runBounds.origin.y = baselineOrigin.y + lineFrame.size.height - ascent; 
+                    runBounds.origin.y = baselineOrigin.y + lineFrame.size.height - ascent;
                     
                     [returnedDict setObject:NSStringFromCGRect(runBounds) forKey:FTCoreTextDataFrame];
                     
@@ -555,6 +556,9 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
                 else if ([tagName isEqualToString:[self defaultTagNameForKey:FTCoreTextTagImage]]) {
                     newNode.isImage = YES;
                 }
+                else if( [tagName isEqualToString:[self defaultTagNameForKey:FTCoreTextTagPage]]) {
+                    newNode.isPage = YES;
+                }
                 
                 [processedString replaceCharactersInRange:tagRange withString:@""];
                 
@@ -604,10 +608,16 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
                     NSRange elementContentRange = NSMakeRange(currentSupernode.startLocation, tagRange.location - currentSupernode.startLocation);
                     NSString *elementContent = [processedString substringWithRange:elementContentRange];
                     
-                    UIImage *img = [UIImage imageNamed:elementContent];
+                    //V0.2 by sharetop
+                    //如果从imageResources中获取不到图像资源，才从bundle中加载
+                    UIImage *img = (UIImage*)[_imageResources objectForKey:elementContent];
+                    if(!img)
+                        img = [UIImage imageNamed:elementContent];
                     
                     if (img) {
-                        NSString *lines = @"\n-\n";
+                        //V0.1 by sharetop
+                        //多让出一行，则解决图片在文字最后面导致无法显示的问题
+                        NSString *lines =@"\n-\n";
                         float leading = img.size.height;
                         currentSupernode.style.leading = leading;
                         
@@ -697,46 +707,6 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
     return result;
 }
 
-/*!
- * @abstract divide the text in different pages according to the tags <_page/> found
- *
- */
-
-+ (NSArray *)pagesFromText:(NSString *)string
-{
-    FTCoreTextView *instance = [[FTCoreTextView alloc] initWithFrame:CGRectZero];
-    NSArray *result = [instance divideTextInPages:string];
-    return (NSArray *)result;
-}
-
-/*!
- * @abstract divide the text in different pages according to the tags <_page/> found
- *
- */
-
-- (NSMutableArray *)divideTextInPages:(NSString *)string
-{
-    NSMutableArray *result = [NSMutableArray array];
-    int prevStart = 0;
-    while (YES) {
-        NSRange rangeStart = [string rangeOfString:[NSString stringWithFormat:@"<%@/>", [self defaultTagNameForKey:FTCoreTextTagPage]]];
-		if (rangeStart.location == NSNotFound) rangeStart = [string rangeOfString:[NSString stringWithFormat:@"<%@ />", [self defaultTagNameForKey:FTCoreTextTagPage]]];
-		
-        if (rangeStart.location != NSNotFound) {
-            NSString *page = [string substringWithRange:NSMakeRange(prevStart, rangeStart.location)];
-            [result addObject:page];
-            string = [string stringByReplacingCharactersInRange:rangeStart withString:@""];
-            prevStart = rangeStart.location;
-        }
-        else {
-            NSString *page = [string substringWithRange:NSMakeRange(prevStart, (string.length - prevStart))];
-            [result addObject:page];
-            break;
-        }
-    }
-    return result;
-}
-
 #pragma mark Styling
 
 - (void)addStyle:(FTCoreTextStyle *)style
@@ -789,17 +759,18 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
 	CTTextAlignment alignment = style.textAlignment;
 	CGFloat maxLineHeight = style.maxLineHeight;
 	CGFloat minLineHeight = style.minLineHeight;
-	CGFloat paragraphLeading = style.leading;
 	
-	CGFloat paragraphSpacingBefore = style.paragraphInset.top;
+    
+    //V0.2 by sharetop
+    //如果是图片，用段前距不用行距
+    CGFloat paragraphLeading =([style.name isEqualToString:FTCoreTextTagImage])?0.f:style.leading;
+	CGFloat paragraphSpacingBefore =([style.name isEqualToString:FTCoreTextTagImage])?style.leading:style.paragraphInset.top;
+	
+    
 	CGFloat paragraphSpacingAfter = style.paragraphInset.bottom;
 	CGFloat paragraphFirstLineHeadIntent = style.paragraphInset.left;
 	CGFloat paragraphHeadIntent = style.paragraphInset.left;
 	CGFloat paragraphTailIntent = style.paragraphInset.right;
-	
-	//if (SYSTEM_VERSION_LESS_THAN(@"5.0")) {
-	paragraphSpacingBefore = 0;
-	//}
 	
 	CFIndex numberOfSettings = 9;
 	CGFloat tabSpacing = 28.f;
@@ -838,7 +809,7 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
 			{kCTParagraphStyleSpecifierFirstLineHeadIndent, sizeof(CGFloat), &paragraphFirstLineHeadIntent},
 			{kCTParagraphStyleSpecifierHeadIndent, sizeof(CGFloat), &paragraphHeadIntent},
 			{kCTParagraphStyleSpecifierTailIndent, sizeof(CGFloat), &paragraphTailIntent},
-			{kCTParagraphStyleSpecifierLineSpacing, sizeof(CGFloat), &paragraphLeading},
+			{kCTParagraphStyleSpecifierLineSpacingAdjustment, sizeof(CGFloat), &paragraphLeading},
 			{kCTParagraphStyleSpecifierTabStops, sizeof(CFArrayRef), &tabStops}//always at the end
 		};
 		
@@ -912,6 +883,7 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
 {
 	if (_framesetter) CFRelease(_framesetter);
 	if (_path) CGPathRelease(_path);
+    if (_imageResources) [_imageResources removeAllObjects];
 }
 
 #pragma mark - Custom Setters
@@ -978,6 +950,7 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
 			_attributedString = string;
 		}
 	}
+    NSLog(@"%s:_attributedString is %@",__func__,_attributedString);
 	return _attributedString;
 }
 
@@ -1069,7 +1042,12 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
 			
 			CTTextAlignment alignment = imageNode.style.textAlignment;
 			
-			UIImage *img = [UIImage imageNamed:imageNode.imageName];
+            //V0.2 by sharetop
+            //如果从imageResources中获取不到图像资源，才从bundle中加载
+            UIImage *img = (UIImage*)[_imageResources objectForKey:imageNode.imageName];
+            if(!img)
+                img = [UIImage imageNamed:imageNode.imageName];
+            
 			if (img) {
 				int x = 0;
 				if (alignment == kCTRightTextAlignment) x = (self.frame.size.width - img.size.width);
