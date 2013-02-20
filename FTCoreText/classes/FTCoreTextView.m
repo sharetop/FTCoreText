@@ -17,6 +17,8 @@ NSString * const FTCoreTextTagBullet = @"_bullet";
 NSString * const FTCoreTextTagPage = @"_page";
 NSString * const FTCoreTextTagLink = @"_link";
 
+NSString * const FTCoreTextTagIcon = @"_icon";
+
 NSString * const FTCoreTextDataURL = @"url";
 NSString * const FTCoreTextDataName = @"FTCoreTextDataName";
 NSString * const FTCoreTextDataFrame = @"FTCoreTextDataFrame";
@@ -40,7 +42,6 @@ typedef enum {
 @property (nonatomic, assign) BOOL				isImage;
 @property (nonatomic, assign) BOOL				isBullet;
 @property (nonatomic, strong) NSString			*imageName;
-@property (nonatomic, assign) BOOL              isPage;
 
 - (NSString *)descriptionOfTree;
 - (NSString *)descriptionToRoot;
@@ -67,7 +68,6 @@ typedef enum {
 @synthesize startLocation = _startLocation;
 @synthesize isBullet = _isBullet;
 @synthesize imageName = _imageName;
-@synthesize isPage = _isPage;
 
 - (NSArray *)subnodes
 {
@@ -553,11 +553,8 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
                     
                     [newNode addSubnode:bulletNode];
                 }
-                else if ([tagName isEqualToString:[self defaultTagNameForKey:FTCoreTextTagImage]]) {
+                else if ([tagName isEqualToString:[self defaultTagNameForKey:FTCoreTextTagImage]] || [tagName isEqualToString:[self defaultTagNameForKey:FTCoreTextTagIcon]]) {
                     newNode.isImage = YES;
-                }
-                else if( [tagName isEqualToString:[self defaultTagNameForKey:FTCoreTextTagPage]]) {
-                    newNode.isPage = YES;
                 }
                 
                 [processedString replaceCharactersInRange:tagRange withString:@""];
@@ -617,8 +614,27 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
                     if (img) {
                         //V0.1 by sharetop
                         //多让出一行，则解决图片在文字最后面导致无法显示的问题
+                        //V0.3 by sharetop
+                        //表情图，用-来占位，不换行
+                        
+                        currentSupernode.style.color=[UIColor clearColor];
                         NSString *lines =@"\n-\n";
                         float leading = img.size.height;
+                        
+                        if([tagName isEqualToString:FTCoreTextTagIcon]){
+                            NSString *ch=@"-";
+                            //根据_emoticon对应的字体大小，准备出足够的占位符
+                            NSMutableString *str=[[NSMutableString alloc]init];
+                            CGFloat spaceWidth = [ch sizeWithFont:style.font].width;
+                            int count = (int)ceil((img.size.height/spaceWidth));
+                            for (int i=0; i<count; ++i) {
+                                [str appendString:ch];
+                            }
+                            if(str.length>1)
+                                [str replaceCharactersInRange:NSMakeRange(str.length-1, 1) withString:@" "];
+                            lines=str;
+                        }
+                        
                         currentSupernode.style.leading = leading;
                         
                         currentSupernode.imageName = elementContent;
@@ -763,16 +779,18 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
     
     //V0.2 by sharetop
     //如果是图片，用段前距不用行距
-    CGFloat paragraphLeading =([style.name isEqualToString:FTCoreTextTagImage])?0.f:style.leading;
+    CGFloat paragraphLeading =([style.name isEqualToString:FTCoreTextTagImage] ||[style.name isEqualToString:FTCoreTextTagIcon])
+                                    ?0.f:style.leading;
 	CGFloat paragraphSpacingBefore =([style.name isEqualToString:FTCoreTextTagImage])?style.leading:style.paragraphInset.top;
 	
+    CTLineBreakMode lineBreakMode = kCTLineBreakByWordWrapping; //kCTLineBreakByCharWrapping;  //kCTLineBreakByWordWrapping;
     
 	CGFloat paragraphSpacingAfter = style.paragraphInset.bottom;
 	CGFloat paragraphFirstLineHeadIntent = style.paragraphInset.left;
 	CGFloat paragraphHeadIntent = style.paragraphInset.left;
 	CGFloat paragraphTailIntent = style.paragraphInset.right;
 	
-	CFIndex numberOfSettings = 9;
+	CFIndex numberOfSettings = 11;
 	CGFloat tabSpacing = 28.f;
 	
 	BOOL applyParagraphStyling = style.applyParagraphStyling;
@@ -809,7 +827,9 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
 			{kCTParagraphStyleSpecifierFirstLineHeadIndent, sizeof(CGFloat), &paragraphFirstLineHeadIntent},
 			{kCTParagraphStyleSpecifierHeadIndent, sizeof(CGFloat), &paragraphHeadIntent},
 			{kCTParagraphStyleSpecifierTailIndent, sizeof(CGFloat), &paragraphTailIntent},
+            {kCTParagraphStyleSpecifierLineSpacing, sizeof(CGFloat), &paragraphLeading},
 			{kCTParagraphStyleSpecifierLineSpacingAdjustment, sizeof(CGFloat), &paragraphLeading},
+            {kCTParagraphStyleSpecifierLineBreakMode,sizeof(CTLineBreakMode),&lineBreakMode},
 			{kCTParagraphStyleSpecifierTabStops, sizeof(CFArrayRef), &tabStops}//always at the end
 		};
 		
@@ -874,6 +894,7 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
 	_defaultsTags = [NSMutableDictionary dictionaryWithObjectsAndKeys:FTCoreTextTagDefault, FTCoreTextTagDefault,
 					  FTCoreTextTagLink, FTCoreTextTagLink,
 					  FTCoreTextTagImage, FTCoreTextTagImage,
+                      FTCoreTextTagIcon, FTCoreTextTagIcon,
 					  FTCoreTextTagPage, FTCoreTextTagPage,
 					  FTCoreTextTagBullet, FTCoreTextTagBullet,
 					  nil];
@@ -1016,8 +1037,7 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
     }
 	
     CTFrameRef ctframe = CTFramesetterCreateFrame(_framesetter, CFRangeMake(0, 0), mainPath, NULL);
-    CGPathRelease(mainPath);
-	
+    
     NSArray *lines = (__bridge NSArray *)CTFrameGetLines(ctframe);
     NSInteger lineCount = [lines count];
     CGPoint origins[lineCount];
@@ -1025,6 +1045,7 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
 	CTFrameGetLineOrigins(ctframe, CFRangeMake(0, 0), origins);
 	
 	FTCoreTextNode *imageNode = [_images objectAtIndex:0];
+    if(!imageNode) return;
 	
 	for (int i = 0; i < lineCount; i++) {
 		CGPoint baselineOrigin = origins[i];
@@ -1032,48 +1053,93 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
 		baselineOrigin.y = CGRectGetHeight(self.frame) - baselineOrigin.y;
 		
 		CTLineRef line = (__bridge CTLineRef)[lines objectAtIndex:i];
-		CFRange cfrange = CTLineGetStringRange(line);        
+		CFRange lineRange = CTLineGetStringRange(line);
 		
-        if (cfrange.location > imageNode.styleRange.location) {
-			CGFloat ascent, descent;
-			CGFloat lineWidth = CTLineGetTypographicBounds(line, &ascent, &descent, NULL);
-			
-			CGRect lineFrame = CGRectMake(baselineOrigin.x, baselineOrigin.y - ascent, lineWidth, ascent + descent);
-			
-			CTTextAlignment alignment = imageNode.style.textAlignment;
-			
-            //V0.2 by sharetop
-            //如果从imageResources中获取不到图像资源，才从bundle中加载
-            UIImage *img = (UIImage*)[_imageResources objectForKey:imageNode.imageName];
-            if(!img)
-                img = [UIImage imageNamed:imageNode.imageName];
+        //V0.3 by sharetop
+        //按图元来绘制
+        for( id runObj in (__bridge NSArray*) CTLineGetGlyphRuns(line)){
+            CTRunRef run = (__bridge CTRunRef)runObj;
+            CFRange runRange = CTRunGetStringRange(run);
             
-			if (img) {
-				int x = 0;
-				if (alignment == kCTRightTextAlignment) x = (self.frame.size.width - img.size.width);
-				if (alignment == kCTCenterTextAlignment) x = ((self.frame.size.width - img.size.width) / 2);
-				
-				CGRect frame = CGRectMake(x, (lineFrame.origin.y - img.size.height), img.size.width, img.size.height);
+            CFDictionaryRef runAttributes = CTRunGetAttributes(run);
+            NSString * tagName = (__bridge NSString *)(CFDictionaryGetValue(runAttributes,(__bridge const void *)(FTCoreTextDataName)));
+            
+            if([tagName isEqualToString:FTCoreTextTagImage] && lineRange.location>imageNode.styleRange.location){
+                //绘制图像
+                CGFloat ascent, descent;
+                CGFloat lineWidth = CTLineGetTypographicBounds(line, &ascent, &descent, NULL);
                 
-                // adjusting frame
-				
-                UIEdgeInsets insets = imageNode.style.paragraphInset;
-                if (alignment != kCTCenterTextAlignment) frame.origin.x = (alignment == kCTLeftTextAlignment)? insets.left : (self.frame.size.width - img.size.width - insets.right);
-                frame.origin.y += insets.top;
-                frame.size.width = ((insets.left + insets.right + img.size.width ) > self.frame.size.width)? self.frame.size.width : img.size.width;
+                CGRect lineFrame = CGRectMake(baselineOrigin.x, baselineOrigin.y - ascent, lineWidth, ascent + descent);
                 
-				[img drawInRect:CGRectIntegral(frame)];
-			}
-			
-			NSInteger imageNodeIndex = [_images indexOfObject:imageNode];
-			if (imageNodeIndex < [_images count] - 1) {
-				imageNode = [_images objectAtIndex:imageNodeIndex + 1];
-			}
-			else {
-				break;
-			}
-		}
-	}
+                CTTextAlignment alignment = imageNode.style.textAlignment;
+                
+                //V0.2 by sharetop
+                //如果从imageResources中获取不到图像资源，才从bundle中加载
+                UIImage *img = (UIImage*)[_imageResources objectForKey:imageNode.imageName];
+                if(!img)
+                    img = [UIImage imageNamed:imageNode.imageName];
+                
+                if (img) {
+                    int x = 0;
+                    if (alignment == kCTRightTextAlignment) x = (self.frame.size.width - img.size.width);
+                    if (alignment == kCTCenterTextAlignment) x = ((self.frame.size.width - img.size.width) / 2);
+                    
+                    CGRect frame = CGRectMake(x, (lineFrame.origin.y - img.size.height), img.size.width, img.size.height);
+                    
+                    // adjusting frame
+                    
+                    UIEdgeInsets insets = imageNode.style.paragraphInset;
+                    if (alignment != kCTCenterTextAlignment) frame.origin.x = (alignment == kCTLeftTextAlignment)? insets.left : (self.frame.size.width - img.size.width - insets.right);
+                    frame.origin.y += insets.top;
+                    frame.size.width = ((insets.left + insets.right + img.size.width ) > self.frame.size.width)? self.frame.size.width : img.size.width;
+                    
+                    [img drawInRect:CGRectIntegral(frame)];
+                }
+                
+                NSInteger imageNodeIndex = [_images indexOfObject:imageNode];
+                if (imageNodeIndex < [_images count] - 1) {
+                    imageNode = [_images objectAtIndex:imageNodeIndex + 1];
+                }
+                else {
+                    break;
+                }
+            }
+            else if([tagName isEqualToString:FTCoreTextTagIcon] && runRange.location<=imageNode.styleRange.location && runRange.location+runRange.length>imageNode.styleRange.location){
+                //绘制图标
+                CGRect imgBounds;
+                CGFloat ascent, descent;
+                imgBounds.size.width = CTRunGetTypographicBounds(run, CFRangeMake(0, 0), &ascent, &descent, NULL);
+                imgBounds.size.height = ascent + descent;
+                CGFloat xOffset = CTLineGetOffsetForStringIndex(line, CTRunGetStringRange(run).location, NULL);
+                imgBounds.origin.x = baselineOrigin.x  + xOffset;
+                imgBounds.origin.y = baselineOrigin.y;
+                imgBounds.origin.y -= (ascent+descent);
+                
+                UIImage *img = [_imageResources objectForKey:imageNode.imageName];
+                if(!img)
+                    img = [UIImage imageNamed:imageNode.imageName];
+                
+                if (img) {
+                    imgBounds.size = img.size;
+                    
+                    NSLog(@"----icon frame is x=%f,y=%f,w=%f,h=%f",imgBounds.origin.x,imgBounds.origin.y,imgBounds.size.width,imgBounds.size.height);
+                    [img drawInRect:CGRectIntegral(imgBounds)];
+                }
+                
+                NSInteger imageNodeIndex =[_images indexOfObject:imageNode];
+                if (imageNodeIndex < [_images count] - 1) {
+                    imageNode = [_images objectAtIndex:imageNodeIndex + 1];
+                }
+                else {
+                    break;
+                }
+            }
+            
+        }//for( id runObj in (__bridge NSArray*) CTLineGetGlyphRuns(line))
+        
+	}//for (int i = 0; i < lineCount; i++)
+    
+    CGPathRelease(mainPath);
 	CFRelease(ctframe);
 }
 

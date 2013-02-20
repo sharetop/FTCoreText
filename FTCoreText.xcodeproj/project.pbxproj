@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		26B0419B16D4F94000619BFD /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 26B0419A16D4F94000619BFD /* README.md */; };
+		26B041A016D50C2700619BFD /* ship.png in Resources */ = {isa = PBXBuildFile; fileRef = 26B0419F16D50C2700619BFD /* ship.png */; };
 		26E8D8C516D3BC25008B57BB /* text2.txt in Resources */ = {isa = PBXBuildFile; fileRef = 26E8D8C416D3BC25008B57BB /* text2.txt */; };
 		682D46DF144C862500D3411E /* FTCoreTextStyle.m in Sources */ = {isa = PBXBuildFile; fileRef = 682D46DC144C862500D3411E /* FTCoreTextStyle.m */; };
 		684DBCAA13FD4DCF00776C6D /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 684DBCA913FD4DCF00776C6D /* UIKit.framework */; };
@@ -27,6 +28,7 @@
 
 /* Begin PBXFileReference section */
 		26B0419A16D4F94000619BFD /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
+		26B0419F16D50C2700619BFD /* ship.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ship.png; sourceTree = "<group>"; };
 		26E8D8C416D3BC25008B57BB /* text2.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = text2.txt; sourceTree = "<group>"; };
 		682D46DB144C862500D3411E /* FTCoreTextStyle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FTCoreTextStyle.h; path = classes/FTCoreTextStyle.h; sourceTree = "<group>"; };
 		682D46DC144C862500D3411E /* FTCoreTextStyle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FTCoreTextStyle.m; path = classes/FTCoreTextStyle.m; sourceTree = "<group>"; };
@@ -135,6 +137,7 @@
 		68DAFA451439C0A4006E1497 /* assets */ = {
 			isa = PBXGroup;
 			children = (
+				26B0419F16D50C2700619BFD /* ship.png */,
 				9346F4321459AF2200EFA449 /* text.txt */,
 				26E8D8C416D3BC25008B57BB /* text2.txt */,
 				9346F42E1459AEF500EFA449 /* giraffe.png */,
@@ -200,6 +203,7 @@
 				9346F4331459AF2200EFA449 /* text.txt in Resources */,
 				26E8D8C516D3BC25008B57BB /* text2.txt in Resources */,
 				26B0419B16D4F94000619BFD /* README.md in Resources */,
+				26B041A016D50C2700619BFD /* ship.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

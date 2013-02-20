@@ -29,6 +29,8 @@ extern NSString * const FTCoreTextTagBullet;	//Define styles for bullets. Respon
 extern NSString * const FTCoreTextTagPage;		//Divide the text in pages. Respond to markup <_page/>
 extern NSString * const FTCoreTextTagLink;		//Define style for links. Respond to markup <_link>link URL|link replacement name</_link>
 
+extern NSString * const FTCoreTextTagIcon;     //定义了表情符号，对应的标签是<_icon/>，类似于<_image>
+
 /* These constants are used in the dictionary argument of the delegate method -coreTextView:receivedTouchOnData: */
 
 extern NSString * const FTCoreTextDataURL;
