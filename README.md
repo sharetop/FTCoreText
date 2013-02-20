@@ -18,7 +18,7 @@ V0.2
         [coreTextView addImageResourcesObject:img withName:@"giraffe"];
 
 
---------------------------------------------------
+
 
 V0.1
 ----
@@ -39,10 +39,10 @@ V0.1
 
 
 
-==============================================================
-
+_以下是原作者的说明：_
+---
 Welcome to FTCoreText Objective-C library for iOS development.
-==============================================================
+
 
 Implementation Instructions:
 
