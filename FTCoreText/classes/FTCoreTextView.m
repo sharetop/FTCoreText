@@ -19,7 +19,7 @@ NSString * const FTCoreTextTagLink = @"_link";
 
 NSString * const FTCoreTextTagIcon = @"_icon";
 
-NSString * const FTCoreTextDataURL = @"url";
+NSString * const FTCoreTextDataValue = @"FTCoreTextDataValue";
 NSString * const FTCoreTextDataName = @"FTCoreTextDataName";
 NSString * const FTCoreTextDataFrame = @"FTCoreTextDataFrame";
 NSString * const FTCoreTextDataAttributes = @"FTCoreTextDataAttributes";
@@ -42,6 +42,7 @@ typedef enum {
 @property (nonatomic, assign) BOOL				isImage;
 @property (nonatomic, assign) BOOL				isBullet;
 @property (nonatomic, strong) NSString			*imageName;
+@property (nonatomic, assign) CGRect            imageBounds;
 
 - (NSString *)descriptionOfTree;
 - (NSString *)descriptionToRoot;
@@ -68,6 +69,7 @@ typedef enum {
 @synthesize startLocation = _startLocation;
 @synthesize isBullet = _isBullet;
 @synthesize imageName = _imageName;
+@synthesize imageBounds = _imageBounds;
 
 - (NSArray *)subnodes
 {
@@ -241,6 +243,8 @@ NSInteger rangeSort(NSString *range1, NSString *range2, void *context);
 - (void)didMakeChanges;
 - (NSString *)defaultTagNameForKey:(NSString *)tagKey;
 
+-(void)longPress:(UILongPressGestureRecognizer *)recognizer;
+
 @end
 
 @implementation FTCoreTextView
@@ -351,6 +355,8 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
 			baselineOrigin.y = CGRectGetHeight(self.frame) - baselineOrigin.y;
 			
 			CTLineRef line = (__bridge CTLineRef)[lines objectAtIndex:i];
+            CFRange lineRange = CTLineGetStringRange(line);
+            
 			CGFloat ascent, descent;
 			CGFloat lineWidth = CTLineGetTypographicBounds(line, &ascent, &descent, NULL);
 			
@@ -367,11 +373,14 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
 					NSRange range = NSRangeFromString(key);
 					if (index >= range.location && index < range.location + range.length) {
 						NSURL *url = [_URLs objectForKey:key];
-						if (url) [returnedDict setObject:url forKey:FTCoreTextDataURL];
+						if (url) {
+                            [returnedDict setObject:url forKey:FTCoreTextDataValue];
+                            [returnedDict setObject:FTCoreTextTagLink forKey:FTCoreTextDataName];
+                        }
 						break;
 					}
 				}
-			
+                
                 //frame
                 CFArrayRef runs = CTLineGetGlyphRuns(line);
                 for(CFIndex j = 0; j < CFArrayGetCount(runs); j++) {
@@ -379,7 +388,7 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
                     NSDictionary* attributes = (__bridge NSDictionary*)CTRunGetAttributes(run);
                     
                     NSString *name = [attributes objectForKey:FTCoreTextDataName];
-                    if (![name isEqualToString:@"_link"]) continue;
+                    if (![name isEqualToString:FTCoreTextTagLink]) continue;
                     
                     [returnedDict setObject:attributes forKey:FTCoreTextDataAttributes];
                     
@@ -397,8 +406,39 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
             
             
             }
+            else {
+                //V04 by sharetop
+                //如果没有找到URL，有可能是图像
+                //NSLog(@"--images count=%d,line count=%ld,line %ld--%ld",_images.count,CTLineGetGlyphCount(line),lineRange.location,lineRange.length);
+                for(id runObj in (__bridge NSArray*)CTLineGetGlyphRuns(line)){
+                    CTRunRef run = (__bridge CTRunRef)(runObj);
+                    CFDictionaryRef runAttributes = CTRunGetAttributes(run);
+                    NSString * tagName = (__bridge NSString *)(CFDictionaryGetValue(runAttributes,(__bridge const void *)(FTCoreTextDataName)));
+                    if([tagName isEqualToString:FTCoreTextTagImage]){
+                        for(FTCoreTextNode * imageNode in _images){
+                            if(lineRange.location>imageNode.styleRange.location &&  CGRectContainsPoint(imageNode.imageBounds, point)){
+                                
+                                [returnedDict setObject:imageNode.imageName forKey:FTCoreTextDataValue];
+                                [returnedDict setObject:FTCoreTextTagImage forKey:FTCoreTextDataName];
+                                [returnedDict setObject:NSStringFromCGRect(imageNode.imageBounds) forKey:FTCoreTextDataFrame];
+                                [returnedDict setObject:(__bridge id)(runAttributes) forKey:FTCoreTextDataAttributes];
+                                
+                                break;
+                            }
+                        }
+                    }
+                    
+                }
+                
+            }
+            
 			if (returnedDict.count > 0) break;
 		}
+        
+        //V0.4 by sharetop
+        if(returnedDict.count==0){
+            [returnedDict setObject:FTCoreTextTagDefault forKey:FTCoreTextDataName];
+        }
 	}
 	
 	CFRelease(ctframe);
@@ -898,6 +938,11 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
 					  FTCoreTextTagPage, FTCoreTextTagPage,
 					  FTCoreTextTagBullet, FTCoreTextTagBullet,
 					  nil];
+    
+    UILongPressGestureRecognizer *press = [[UILongPressGestureRecognizer alloc]initWithTarget:self action:@selector(longPress:)];
+    press.minimumPressDuration = 1.0;
+    [self addGestureRecognizer:press];
+    
 }
 
 - (void)dealloc
@@ -1094,6 +1139,7 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
                     frame.size.width = ((insets.left + insets.right + img.size.width ) > self.frame.size.width)? self.frame.size.width : img.size.width;
                     
                     [img drawInRect:CGRectIntegral(frame)];
+                    imageNode.imageBounds=frame;
                 }
                 
                 NSInteger imageNodeIndex = [_images indexOfObject:imageNode];
@@ -1144,11 +1190,37 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
 }
 
 #pragma mark User Interaction
+-(BOOL)canBecomeFirstResponder
+{
+    return YES;
+}
+-(BOOL)canPerformAction:(SEL)action withSender:(id)sender
+{
+    return (action==@selector(copyText:) || action==@selector(shareText:));
+}
+-(void)longPress:(UILongPressGestureRecognizer *)recognizer
+{
+    if (recognizer.state == UIGestureRecognizerStateBegan) {
+        [self becomeFirstResponder];
+        
+        UIMenuItem *copy = [[UIMenuItem alloc] initWithTitle:@"Copy" action:@selector(copyText:)];
+        UIMenuItem *share = [[UIMenuItem alloc] initWithTitle:@"Share" action:@selector(shareText:)];
+        
+        UIMenuController *menu = [UIMenuController sharedMenuController];
+        [menu setMenuItems:[NSArray arrayWithObjects:copy, share, nil]];
+        [menu setTargetRect:self.frame inView:self];
+        [menu setMenuVisible:YES animated:YES];
+        
+    }  
+}
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
 	[super touchesEnded:touches withEvent:event];
 	
+    if([UIMenuController sharedMenuController].isMenuVisible)
+        [[UIMenuController sharedMenuController] setMenuVisible:NO animated:YES];
+    
 	if (self.delegate && ([self.delegate respondsToSelector:@selector(touchedData:inCoreTextView:)] || [self.delegate respondsToSelector:@selector(coreTextView:receivedTouchOnData:)])) {
 			CGPoint point = [(UITouch *)[touches anyObject] locationInView:self];
 			NSDictionary *data = [self dataForPoint:point];

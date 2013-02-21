@@ -129,6 +129,8 @@
 
 - (void)coreTextView:(FTCoreTextView *)acoreTextView receivedTouchOnData:(NSDictionary *)data {
     
+    NSLog(@"--call back name is %@",[data objectForKey:FTCoreTextDataName]);
+    
     CGRect frame = CGRectFromString([data objectForKey:FTCoreTextDataFrame]);
     
     if (CGRectEqualToRect(CGRectZero, frame)) return;
@@ -141,7 +143,7 @@
     [view.layer setCornerRadius:3];
     [view setBackgroundColor:[UIColor orangeColor]];
     [view setAlpha:0];
-    [acoreTextView.superview addSubview:view];
+    [acoreTextView addSubview:view];
     [UIView animateWithDuration:0.2 animations:^{
         [view setAlpha:0.4];
     } completion:^(BOOL finished) {
@@ -173,7 +175,8 @@
     // set text
     //[coreTextView setText:[self textForView:@"text"]];
     //[coreTextView setText:[self textForView:@"text2"]];
-    [coreTextView setText:@"<title>helloworld</title><_image>giraffe_small</_image>用电脑时间长了，难免会遇到程序卡住，风火轮狂转不停，没有任何相应等情况。<_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon>可能是由于程序冲突、缓存不足或者一些bug等情况导致，这个时候我们就需要强制退出这个程序了，\n下面有六种在Mac系统中强制退出程序的方法，大家至少应该记住一两个。<_image>giraffe</_image>"];
+    //[coreTextView setText:@"<title>helloworld</title><_image>giraffe_small</_image>用电脑时间长了，难免会遇到程序卡住，风火轮狂转不停，没有任何相应等情况。<_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon>可能是由于程序冲突、缓存不足或者一些bug等情况导致，这个时候我们就需要强制退出这个程序了，\n下面有六种在Mac系统中强制退出程序的方法，大家至少应该记住一两个。<_image>giraffe</_image>"];
+    [coreTextView setText:@"hello<_icon>ship</_icon>world<_image>giraffe</_image>hellochina"];
     
     //用UIImage绘图
     UIImage * img = [UIImage imageNamed:@"giraffe"];
