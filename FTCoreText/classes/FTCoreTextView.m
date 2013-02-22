@@ -13,10 +13,7 @@
 
 NSString * const FTCoreTextTagDefault = @"_default";
 NSString * const FTCoreTextTagImage = @"_image";
-NSString * const FTCoreTextTagBullet = @"_bullet";
-NSString * const FTCoreTextTagPage = @"_page";
 NSString * const FTCoreTextTagLink = @"_link";
-
 NSString * const FTCoreTextTagIcon = @"_icon";
 
 NSString * const FTCoreTextDataValue = @"FTCoreTextDataValue";
@@ -30,6 +27,13 @@ typedef enum {
 	FTCoreTextTagTypeSelfClose
 } FTCoreTextTagType;
 
+
+
+////////////////////////////////////////////////////////////////////////
+//
+// FTCoreTextNode
+//
+////////////////////////////////////////////////////////////////////////
 @interface FTCoreTextNode : NSObject
 
 @property (nonatomic, assign) FTCoreTextNode	*supernode;
@@ -407,8 +411,8 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
                     runBounds.size.height = ascent + descent;
                     
                     CGFloat xOffset = CTLineGetOffsetForStringIndex(line, CTRunGetStringRange(run).location, NULL); //9
-                    runBounds.origin.x = baselineOrigin.x + self.frame.origin.x + xOffset + 0;
-                    runBounds.origin.y = baselineOrigin.y + lineFrame.size.height - ascent;
+                    runBounds.origin.x = baselineOrigin.x + xOffset + 0;
+                    runBounds.origin.y = baselineOrigin.y - ascent;
                     
                     [returnedDict setObject:NSStringFromCGRect(runBounds) forKey:FTCoreTextDataFrame];
                     
@@ -582,27 +586,6 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
                 if ([tagName isEqualToString:[self defaultTagNameForKey:FTCoreTextTagLink]]) {
                     newNode.isLink = YES;
                 }
-                else if ([tagName isEqualToString:[self defaultTagNameForKey:FTCoreTextTagBullet]]) {
-                    newNode.isBullet = YES;
-                    
-                    NSString *appendedString = [NSString stringWithFormat:@"%@\t", newNode.style.bulletCharacter];
-                    
-                    [processedString insertString:appendedString atIndex:tagRange.location + tagRange.length];
-                    
-                    //bullet styling
-                    FTCoreTextStyle *bulletStyle = [FTCoreTextStyle new];
-                    bulletStyle.name = @"_FTBulletStyle";
-                    bulletStyle.font = newNode.style.bulletFont;
-                    bulletStyle.color = newNode.style.bulletColor;
-                    bulletStyle.applyParagraphStyling = NO;
-                    bulletStyle.paragraphInset = UIEdgeInsetsMake(0, 0, 0, newNode.style.paragraphInset.left);
-                    
-                    FTCoreTextNode *bulletNode = [FTCoreTextNode new];
-                    bulletNode.style = bulletStyle;
-                    bulletNode.styleRange = NSMakeRange(tagRange.location, [appendedString length]);
-                    
-                    [newNode addSubnode:bulletNode];
-                }
                 else if ([tagName isEqualToString:[self defaultTagNameForKey:FTCoreTextTagImage]] || [tagName isEqualToString:[self defaultTagNameForKey:FTCoreTextTagIcon]]) {
                     newNode.isImage = YES;
                 }
@@ -709,27 +692,6 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
                     NSRange newStyleRange = currentSupernode.styleRange;
                     newStyleRange.length += [currentSupernode.style.appendedCharacter length];
                     currentSupernode.styleRange = newStyleRange;							
-                }
-                
-                if (style.paragraphInset.top > 0) {
-                    if (![style.name isEqualToString:[self defaultTagNameForKey:FTCoreTextTagBullet]] ||  [[currentSupernode previousNode].style.name isEqualToString:[self defaultTagNameForKey:FTCoreTextTagBullet]]) {
-                        
-                        //fix: add a new line for each new line and set its height to 'top' value
-                        [processedString insertString:@"\n" atIndex:currentSupernode.startLocation];
-                        NSRange topSpacingStyleRange = NSMakeRange(currentSupernode.startLocation, [@"\n" length]);
-                        FTCoreTextStyle *topSpacingStyle = [[FTCoreTextStyle alloc] init];
-                        topSpacingStyle.name = [NSString stringWithFormat:@"_FTTopSpacingStyle_%@", currentSupernode.style.name];
-                        topSpacingStyle.minLineHeight = currentSupernode.style.paragraphInset.top;
-                        topSpacingStyle.maxLineHeight = currentSupernode.style.paragraphInset.top;
-                        FTCoreTextNode *topSpacingNode = [[FTCoreTextNode alloc] init];
-                        topSpacingNode.style = topSpacingStyle;
-                        
-                        topSpacingNode.styleRange = topSpacingStyleRange;
-                        
-                        [currentSupernode.supernode insertSubnode:topSpacingNode beforeNode:currentSupernode];
-                        
-                        [currentSupernode adjustStylesAndSubstylesRangesByRange:topSpacingStyleRange];
-                    }
                 }
                 
                 remainingRange.location = currentSupernode.styleRange.location + currentSupernode.styleRange.length;
@@ -845,19 +807,7 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
 	
 	BOOL applyParagraphStyling = style.applyParagraphStyling;
 	
-	if ([style.name isEqualToString:[self defaultTagNameForKey:FTCoreTextTagBullet]]) {
-		applyParagraphStyling = YES;
-	}
-	else if ([style.name isEqualToString:@"_FTBulletStyle"]) {
-		applyParagraphStyling = YES;
-		numberOfSettings++;
-		tabSpacing = style.paragraphInset.right;
-		paragraphSpacingBefore = 0;
-		paragraphSpacingAfter = 0;
-		paragraphFirstLineHeadIntent = 0;
-		paragraphTailIntent = 0;
-	}
-	else if ([style.name hasPrefix:@"_FTTopSpacingStyle"]) {
+	if ([style.name hasPrefix:@"_FTTopSpacingStyle"]) {
 		[*attributedString removeAttribute:(id)kCTParagraphStyleAttributeName range:styleRange];
 	}
 	
@@ -948,8 +898,6 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
 					  FTCoreTextTagLink, FTCoreTextTagLink,
 					  FTCoreTextTagImage, FTCoreTextTagImage,
                       FTCoreTextTagIcon, FTCoreTextTagIcon,
-					  FTCoreTextTagPage, FTCoreTextTagPage,
-					  FTCoreTextTagBullet, FTCoreTextTagBullet,
 					  nil];
     
     

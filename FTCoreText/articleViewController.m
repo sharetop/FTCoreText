@@ -75,7 +75,7 @@
     
 	FTCoreTextStyle *linkStyle = [defaultStyle copy];
 	linkStyle.name = FTCoreTextTagLink;
-	linkStyle.color = [UIColor orangeColor];
+	linkStyle.color = [UIColor blueColor];
 	[result addObject:linkStyle];
     
 	FTCoreTextStyle *subtitleStyle = [FTCoreTextStyle styleWithName:@"subtitle"];
@@ -84,13 +84,6 @@
 	subtitleStyle.paragraphInset = UIEdgeInsetsMake(10, 0, 10, 0);
 	[result addObject:subtitleStyle];
 	
-	FTCoreTextStyle *bulletStyle = [defaultStyle copy];
-	bulletStyle.name = FTCoreTextTagBullet;
-	bulletStyle.bulletFont = [UIFont fontWithName:@"TimesNewRomanPSMT" size:16.f];
-	bulletStyle.bulletColor = [UIColor orangeColor];
-	bulletStyle.bulletCharacter = @"❧";
-	[result addObject:bulletStyle];
-    
     FTCoreTextStyle *italicStyle = [defaultStyle copy];
 	italicStyle.name = @"italic";
 	italicStyle.underlined = YES;
@@ -106,13 +99,6 @@
     [coloredStyle setName:@"colored"];
     [coloredStyle setColor:[UIColor redColor]];
 	[result addObject:coloredStyle];
-    
-    FTCoreTextStyle *pStyle = [defaultStyle copy];
-    [pStyle setName:FTCoreTextTagPage];
-    [pStyle setFont:[UIFont systemFontOfSize:16.f]];
-    [pStyle setTextAlignment:FTCoreTextAlignementLeft];
-    [pStyle setColor:[UIColor blackColor]];
-	[result addObject:pStyle];
     
     //可以自己定义特殊的标签，比如<p1>,<p2>或者<red><blue>......
     
@@ -181,9 +167,9 @@
     
     // set text
     //[coreTextView setText:[self textForView:@"text"]];
-    //[coreTextView setText:[self textForView:@"text2"]];
+    [coreTextView setText:[self textForView:@"text2"]];
     //[coreTextView setText:@"<title>helloworld</title><_image>giraffe_small</_image>用电脑时间长了，难免会遇到程序卡住，风火轮狂转不停，没有任何相应等情况。<_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon><_icon>ship</_icon>可能是由于程序冲突、缓存不足或者一些bug等情况导致，这个时候我们就需要强制退出这个程序了，\n下面有六种在Mac系统中强制退出程序的方法，大家至少应该记住一两个。<_image>giraffe</_image>"];
-    [coreTextView setText:@"hello<_icon>ship</_icon>world<_image>giraffe</_image>hellochina"];
+    //[coreTextView setText:@"hello<_icon>ship</_icon>world<_image>giraffe</_image>hellochina"];
     
     //用UIImage绘图
     UIImage * img = [UIImage imageNamed:@"giraffe"];

@@ -53,10 +53,6 @@ typedef uint8_t FTCoreTextAlignement;
 @property (nonatomic, assign) CGFloat			leading;
 @property (nonatomic, assign) CGFloat			maxLineHeight;
 @property (nonatomic, assign) CGFloat			minLineHeight;
-//for bullet styles only
-@property (nonatomic, strong) NSString			*bulletCharacter;
-@property (nonatomic, strong) UIFont			*bulletFont;
-@property (nonatomic, strong) UIColor			*bulletColor;
 
 //if NO, the paragraph styling of the enclosing style is used. Default is YES.
 @property (nonatomic, assign) BOOL applyParagraphStyling;

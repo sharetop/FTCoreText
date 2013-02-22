@@ -18,9 +18,6 @@
 @synthesize textAlignment = _textAlignment;
 @synthesize paragraphInset = _paragraphInset;
 @synthesize applyParagraphStyling = _applyParagraphStyling;
-@synthesize bulletCharacter = _bulletCharacter;
-@synthesize bulletFont = _bulletFont;
-@synthesize bulletColor = _bulletColor;
 @synthesize leading = _leading;
 @synthesize maxLineHeight = _maxLineHeight;
 @synthesize minLineHeight = _minLineHeight;
@@ -32,7 +29,6 @@
 	self = [super init];
 	if (self) {
 		self.name = @"_default";
-		self.bulletCharacter = @"•";
 		self.appendedCharacter = @"";
 		self.font = [UIFont systemFontOfSize:12];
 		self.color = [UIColor blackColor];
@@ -65,28 +61,11 @@
 	return _paragraphInset.bottom;
 }
 
-- (UIFont *)bulletFont
-{
-	if (_bulletFont == nil) {
-		return _font;
-	}
-	return _bulletFont;
-}
-
-- (UIColor *)bulletColor
-{
-	if (_bulletColor == nil) {
-		return _color;
-	}
-	return _bulletColor;
-}
-
 - (id)copyWithZone:(NSZone *)zone
 {
 	FTCoreTextStyle *style = [[FTCoreTextStyle alloc] init];
 	style.name = [self.name copy];
-	style.bulletCharacter = self.bulletCharacter;
-	style.appendedCharacter = [self.appendedCharacter copy];
+    style.appendedCharacter = [self.appendedCharacter copy];
 	style.font = [UIFont fontWithName:self.font.fontName size:self.font.pointSize];
 	style.color = self.color;
 	style.underlined = self.isUnderLined;

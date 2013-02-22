@@ -1,1 +1,1 @@
-helloworld<_image>giraffe_small</_image><_page>SHARETOP.CN</_page><_page>who are you?</_page><_image>giraffe</_image>
+helloworld<_image>giraffe_small</_image><_link>http://www.sharetop.cn|SHARETOP.CN</_link><_image>giraffe</_image>
