@@ -33,10 +33,18 @@ extern NSString * const FTCoreTextTagIcon;     //定义了表情符号，对应�
 
 /* These constants are used in the dictionary argument of the delegate method -coreTextView:receivedTouchOnData: */
 
-extern NSString * const FTCoreTextDataURL;
+extern NSString * const FTCoreTextDataValue;
 extern NSString * const FTCoreTextDataName;
 extern NSString * const FTCoreTextDataFrame;
 extern NSString * const FTCoreTextDataAttributes;
+
+//V0.4 用于弹出菜单
+typedef enum {
+    FTCoreTextActionCopy=0,
+    FTCoreTextActionShare=1,
+    FTCoreTextActionSave=2
+} FTCoreTextAction;
+
 
 @protocol FTCoreTextViewDelegate;
 
@@ -61,7 +69,9 @@ extern NSString * const FTCoreTextDataAttributes;
 //shadow is not yet part of a style. It's applied on the whole view	
 @property (nonatomic, strong) UIColor *shadowColor;
 @property (nonatomic, assign) CGSize shadowOffset;
+
 @property (nonatomic,strong) NSMutableDictionary * imageResources; //key=图片文件名称（NSString） value=图片内容（UIImage）
+@property (nonatomic, assign) BOOL enableContextMenu;
 
 /* Using this method, you then have to set the -text property to get any result */
 - (id)initWithFrame:(CGRect)frame;
@@ -93,6 +103,7 @@ extern NSString * const FTCoreTextDataAttributes;
 @protocol FTCoreTextViewDelegate <NSObject>
 @optional
 - (void)coreTextView:(FTCoreTextView *)coreTextView receivedTouchOnData:(NSDictionary *)data;
+- (void)coretextView:(FTCoreTextView *)coreTextView receivedContextMenu:(FTCoreTextAction)action onData:(NSDictionary*)data;
 @end
 
 @interface NSString (FTCoreText)

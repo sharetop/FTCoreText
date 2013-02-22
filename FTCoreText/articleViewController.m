@@ -127,6 +127,11 @@
     return  result;
 }
 
+-(void)coretextView:(FTCoreTextView *)coreTextView receivedContextMenu:(FTCoreTextAction)action onData:(NSDictionary *)data
+{
+    NSLog(@"---context menu:%d, data is %@",action,data);
+    
+}
 - (void)coreTextView:(FTCoreTextView *)acoreTextView receivedTouchOnData:(NSDictionary *)data {
     
     NSLog(@"--call back name is %@",[data objectForKey:FTCoreTextDataName]);
@@ -154,9 +159,11 @@
     
     return;
     
-    NSURL *url = [data objectForKey:FTCoreTextDataURL];
-    if (!url) return;
-    [[UIApplication sharedApplication] openURL:url];
+    if([[data objectForKey:FTCoreTextDataName] isEqualToString:FTCoreTextTagLink]){
+        NSURL *url = [data objectForKey:FTCoreTextDataValue];
+        if (!url) return;
+        [[UIApplication sharedApplication] openURL:url];
+    }
 }
 
 #pragma mark - View Controller Methods
@@ -188,6 +195,8 @@
     [coreTextView addStyles:[self coreTextStyle]];
     // set delegate
     [coreTextView setDelegate:self];
+    
+    [coreTextView setEnableContextMenu:YES];
 	
     //背景色淡灰，方便查看尺寸
 	[coreTextView fitToSuggestedHeight];

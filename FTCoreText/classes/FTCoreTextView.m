@@ -224,12 +224,23 @@ typedef enum {
 
 @end
 
-
+#pragma mark --
+#pragma mark --以下是FTCoreTextView
+#pragma mark --
+////////////////////////////////////////////////////////////////////
+//
+// FTCoreTextView
+//
+////////////////////////////////////////////////////////////////////
 
 @interface FTCoreTextView ()
-
-@property (nonatomic, assign) CTFramesetterRef framesetter;
-@property (nonatomic, retain) FTCoreTextNode *rootNode;
+{
+    NSDictionary * _dataDictionary;
+    CTFramesetterRef _framesetter;
+    FTCoreTextNode * _rootNode;
+    CGPoint _longPressPoint;
+    UILongPressGestureRecognizer * _longPressGestureRecognizer;
+}
 
 CTFontRef CTFontCreateFromUIFont(UIFont *font);
 UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignment);
@@ -255,12 +266,11 @@ NSInteger rangeSort(NSString *range1, NSString *range2, void *context);
 @synthesize URLs = _URLs;
 @synthesize images = _images;
 @synthesize delegate = _delegate;
-@synthesize framesetter = _framesetter;
-@synthesize rootNode = _rootNode;
 @synthesize shadowColor = _shadowColor;
 @synthesize shadowOffset = _shadowOffset;
 @synthesize attributedString = _attributedString;
 @synthesize imageResources = _imageResources;
+@synthesize enableContextMenu=_enableContextMenu;
 
 #pragma mark - Tools methods
 
@@ -745,8 +755,8 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
 	
 	rootNode.styleRange = NSMakeRange(0, [processedString length]);
 	
-	self.rootNode = rootNode;	
-	self.processedString = processedString;
+	_rootNode = rootNode;
+	_processedString = processedString;
 }
 
 /*!
@@ -917,6 +927,9 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
     _images = [[NSMutableArray alloc] init];
     
     _imageResources = [[NSMutableDictionary alloc]init];
+    _enableContextMenu = NO;
+    
+    _longPressPoint=CGPointZero;
     
 	self.opaque = NO;
 	self.backgroundColor = [UIColor clearColor];
@@ -939,10 +952,9 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
 					  FTCoreTextTagBullet, FTCoreTextTagBullet,
 					  nil];
     
-    UILongPressGestureRecognizer *press = [[UILongPressGestureRecognizer alloc]initWithTarget:self action:@selector(longPress:)];
-    press.minimumPressDuration = 1.0;
-    [self addGestureRecognizer:press];
     
+    _longPressGestureRecognizer = [[UILongPressGestureRecognizer alloc]initWithTarget:self action:@selector(longPress:)];
+    _longPressGestureRecognizer.minimumPressDuration = 1.0;
 }
 
 - (void)dealloc
@@ -954,6 +966,20 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
 
 #pragma mark - Custom Setters
 
+-(void)setEnableContextMenu:(BOOL)enableContextMenu
+{
+    if(enableContextMenu){
+        [self addGestureRecognizer:_longPressGestureRecognizer];
+    }
+    else {
+        [self removeGestureRecognizer:_longPressGestureRecognizer];
+    }
+    _enableContextMenu=enableContextMenu;
+}
+-(BOOL)enableContextMenu
+{
+    return _enableContextMenu;
+}
 - (void)setText:(NSString *)text
 {
     _text = text;
@@ -1196,24 +1222,85 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
 }
 -(BOOL)canPerformAction:(SEL)action withSender:(id)sender
 {
-    return (action==@selector(copyText:) || action==@selector(shareText:));
+    if(self.enableContextMenu)
+        return (action==@selector(copyText:)||action==@selector(shareText:)
+                    ||action==@selector(saveImage:)||action==@selector(shareImage:));
+    else return NO;
+}
+-(void) copyText:(id)sender
+{
+    if([self.delegate respondsToSelector:@selector(coretextView:receivedContextMenu:onData:)]){
+        [self.delegate coretextView:self receivedContextMenu:FTCoreTextActionCopy onData:_dataDictionary];
+    }
+}
+-(void) shareText:(id)sender
+{
+    if([self.delegate respondsToSelector:@selector(coretextView:receivedContextMenu:onData:)]){
+        [self.delegate coretextView:self receivedContextMenu:FTCoreTextActionShare onData:_dataDictionary];
+    }
+}
+-(void) saveImage:(id)sender
+{
+    if([self.delegate respondsToSelector:@selector(coretextView:receivedContextMenu:onData:)]){
+        [self.delegate coretextView:self receivedContextMenu:FTCoreTextActionSave onData:_dataDictionary];
+    }
+}
+-(void) shareImage:(id)sender
+{
+    if([self.delegate respondsToSelector:@selector(coretextView:receivedContextMenu:onData:)]){
+        [self.delegate coretextView:self receivedContextMenu:FTCoreTextActionShare onData:_dataDictionary];
+    }
 }
 -(void)longPress:(UILongPressGestureRecognizer *)recognizer
 {
-    if (recognizer.state == UIGestureRecognizerStateBegan) {
+    if (self.enableContextMenu && recognizer.state == UIGestureRecognizerStateBegan && !CGPointEqualToPoint(_longPressPoint,CGPointZero)) {
         [self becomeFirstResponder];
         
-        UIMenuItem *copy = [[UIMenuItem alloc] initWithTitle:@"Copy" action:@selector(copyText:)];
-        UIMenuItem *share = [[UIMenuItem alloc] initWithTitle:@"Share" action:@selector(shareText:)];
-        
-        UIMenuController *menu = [UIMenuController sharedMenuController];
-        [menu setMenuItems:[NSArray arrayWithObjects:copy, share, nil]];
-        [menu setTargetRect:self.frame inView:self];
-        [menu setMenuVisible:YES animated:YES];
-        
+        NSDictionary *data = [self dataForPoint:_longPressPoint];
+        if (data) {
+            
+            _dataDictionary=nil;
+            
+            UIMenuController *menu = [UIMenuController sharedMenuController];
+            if([[data objectForKey:FTCoreTextDataName] isEqualToString:FTCoreTextTagDefault]){
+                UIMenuItem *copyItem = [[UIMenuItem alloc] initWithTitle:NSLocalizedString(@"Copy",@"") action:@selector(copyText:)];
+                UIMenuItem *shareItem = [[UIMenuItem alloc] initWithTitle:NSLocalizedString(@"Share",@"") action:@selector(shareText:)];
+                
+                _dataDictionary = [data copy];
+                
+                [menu setMenuItems:[NSArray arrayWithObjects:copyItem, shareItem, nil]];
+                [menu setTargetRect:self.frame inView:self];
+                [menu setMenuVisible:YES animated:YES];                
+            }
+            else if([[data objectForKey:FTCoreTextDataName] isEqualToString:FTCoreTextTagImage]){
+                UIMenuItem *saveItem = [[UIMenuItem alloc] initWithTitle:NSLocalizedString(@"Save",@"") action:@selector(saveImage:)];
+                UIMenuItem *shareItem = [[UIMenuItem alloc] initWithTitle:NSLocalizedString(@"Share",@"") action:@selector(shareImage:)];
+                
+                _dataDictionary = [data copy];
+                
+                [menu setMenuItems:[NSArray arrayWithObjects:saveItem, shareItem, nil]];
+                
+                CGRect frame = CGRectFromString([data objectForKey:FTCoreTextDataFrame]);
+                [menu setTargetRect:frame inView:self];
+                [menu setMenuVisible:YES animated:YES];
+            }
+            
+        }
+       
     }  
 }
 
+#pragma mark touches
+
+-(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    NSLog(@"%s",__func__);
+    
+    if(self.enableContextMenu)
+        _longPressPoint=[(UITouch*)[touches anyObject] locationInView:self];
+    
+    
+}
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
 	[super touchesEnded:touches withEvent:event];
