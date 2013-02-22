@@ -407,8 +407,8 @@ UITextAlignment UITextAlignmentFromCoreTextAlignment(FTCoreTextAlignement alignm
                     runBounds.size.height = ascent + descent;
                     
                     CGFloat xOffset = CTLineGetOffsetForStringIndex(line, CTRunGetStringRange(run).location, NULL); //9
-                    runBounds.origin.x = baselineOrigin.x + self.frame.origin.x + xOffset + 0;
-                    runBounds.origin.y = baselineOrigin.y + lineFrame.size.height - ascent;
+                    runBounds.origin.x = baselineOrigin.x  + xOffset + 0;
+                    runBounds.origin.y = baselineOrigin.y  - ascent;
                     
                     [returnedDict setObject:NSStringFromCGRect(runBounds) forKey:FTCoreTextDataFrame];
                     
